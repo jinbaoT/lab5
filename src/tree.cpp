@@ -1,6 +1,8 @@
 #include "tree.h"
+#include<iomanip>
 static int TreeNodeID = 0;
 static int DomainID=0;
+int nodeIDCount=0;
 
 void TreeNode::addChild(TreeNode *child)
 {
@@ -28,66 +30,66 @@ TreeNode::TreeNode(int lineno, NodeType type)
 {
     this->lineno = lineno;
     this->nodeType = type;
-    genNodeId();
+    //genNodeId();
 }
 
 void TreeNode::genNodeId()
 {
-    this->nodeID = TreeNodeID;
-    TreeNodeID += 1;
+    this->nodeID = nodeIDCount++;
+    if(this->child)
+        child->genNodeId();
+    if(this->sibling)
+        sibling->genNodeId();
 }
 
 void TreeNode::printNodeInfo(TreeNode *t)
 {
-    string print_type = "";
-    string detail = "";
+    string TYPE = "";
+    string CONTENT = "";
     string childNodeID = "Children: ";
     if (t->nodeType == NODE_STMT)
     {
-        detail = sType2String(t->stype);
+        CONTENT = sType2String(t->stype);
     }
     else if (t->nodeType == NODE_EXPR)
     {
-        detail = "OP: " + opType2String(t->optype);
+        CONTENT = "OP " + opType2String(t->optype);
     }
     else if (t->nodeType == NODE_TYPE){
-        detail = t->type->getTypeInfo();
+        CONTENT = t->type->getTypeInfo();
     }
     else if (t->nodeType == NODE_VAR){
-        detail = "var name: " + t->var_name;
+        CONTENT = "var name: " + t->var_name;
     }
     else if(t->nodeType == NODE_CONST){
         string t_type_str = t->type->getTypeInfo();
         if(t_type_str=="int"){
-            detail = to_string(t->int_val);
+            CONTENT = to_string(t->int_val);
         }
         else if (t_type_str == "string")
         {
-            detail = str_val;
+            CONTENT = str_val;
         }
         else if (t_type_str == "bool")
         {
-            detail = to_string(t->b_val);
+            CONTENT = to_string(t->b_val);
         }
         else if (t_type_str == "double")
         {
-            detail = to_string(t->d_val);
+            CONTENT = to_string(t->d_val);
         }
         else if(t_type_str == "char"){
-            detail = to_string(t->ch_val);
+            CONTENT = to_string(t->ch_val);
         }
-       detail = t_type_str+": "+detail;
+       CONTENT = t_type_str+": "+CONTENT;
     }
 
-    print_type = nodeType2String(t->nodeType);
+    TYPE = nodeType2String(t->nodeType);
 
-    cout << "lno@" << t->lineno << "  "
-         << "@" << t->nodeID << "  " << print_type << "  " << detail << "  children:[";
+    cout << "lno@" << t->lineno << "  "<< "@" <<std::setw(10) <<setiosflags(ios::left)<<t->nodeID 
+    <<std::setw(20) <<setiosflags(ios::left)<< TYPE <<std::setw(20) <<setiosflags(ios::left)<< CONTENT << "  children:[";
     printChildrenId(t);
     cout<<"]  "<<endl;
-    //cout << "]  " <<"SCOPE:" << t->scope->area <<endl;
-    // string t = "";
-    // cout << "  " << setw(10) << t << endl;
 }
 
 void TreeNode::printChildrenId(TreeNode *t)
