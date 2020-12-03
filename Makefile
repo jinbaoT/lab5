@@ -1,31 +1,36 @@
+  
 CC := g++
 CFLAGS := -Wall -Wextra -std=c++11 # without debug
-TARGET := ./bin/main
+TARGET := ./main
 
 all: run
 
-src/main.lex.yy.c: src/main.l
-	 flex --noyywrap -o src/main.lex.yy.cpp  src/main.l 
+main.lex.yy.c: main.l
+	 flex --noyywrap -o main.lex.yy.cpp  main.l
 
-src/main.tab.c: src/main.y
-	bison -o src/main.tab.cpp --defines=src/main.tab.h -v src/main.y
+main.tab.c: main.y
+	bison -o main.tab.cpp --defines=main.tab.h -v main.y
 
-src/pch.h.gch: src/pch.h
-	g++ -x c++-header -o src/pch.h.gch -c src/pch.h
+pch.h.gch: pch.h
+	g++ -x c++-header -o pch.h.gch -c pch.h
 
-lex: src/main.lex.yy.c
+lex: main.lex.yy.c
 
-yacc: src/main.tab.c
+yacc: main.tab.c
 
-main: src/pch.h.gch
-	$(CC) $(CFLAGS) $(shell ls ./src/*.cpp) -o ./bin/main
+main: pch.h.gch
+	$(CC) $(CFLAGS) $(shell ls ./*.cpp) -o ./main
 
 .PHONY: all clean main run lex yacc test debug link testscope asm nasm example-code out
 
 run: lex yacc main
 
 clean:
-	rm -f src/*.output src/main.lex.yy.cpp src/main.tab.cpp src/main.tab.h src/main.output src/pch.h.gch $(TARGET) *.o ./bin/* 
+	rm -f *.output lex.yy.cc main.tab.cpp main.tab.h main.output pch.h.gch main.tab.cc test/*.res
 
-test: 
-	./bin/main tests/test.c > result.txt
+
+test:
+	for file in $(basename $(shell find test/*.c)); \
+	do \
+		./main <$$file.c >$$file.res; \
+	done
